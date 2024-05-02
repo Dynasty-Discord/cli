@@ -1,0 +1,25 @@
+{
+  "name": "cli",
+  "version": "1.0.0",
+  "description": "CLI for DynastyCore",
+  "main": "build/index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "ts-node-dev src/index.ts",
+    "prod": "node build/index.js",
+    "build": "npm run clean && tsc",
+    "clean": "rimraf ./build"
+  },
+  "author": "",
+  "license": "ISC",
+  "bin": {
+    "dynastycore": "./build/index.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.8.2"
+  }
+}
