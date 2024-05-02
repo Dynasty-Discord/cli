@@ -1,5 +1,5 @@
 {
-  "name": "cli",
+  "name": "dynasty-cli",
   "version": "1.0.0",
   "description": "CLI for DynastyCore",
   "main": "build/index.js",
@@ -11,6 +11,7 @@
     "clean": "rimraf ./build"
   },
   "author": "",
+  "type": "commonjs",
   "license": "ISC",
   "bin": {
     "dynastycore": "./build/index.js"
@@ -18,8 +19,13 @@
   "dependencies": {
     "chalk": "^5.3.0",
     "commander": "^12.0.0",
+    "fs-extra": "^11.2.0",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
+    "tslib": "^2.6.2",
     "tsx": "^4.8.2"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4"
   }
 }
