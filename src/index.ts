@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { program } from "commander";
-import { updateModuleCommand } from "./commands/update-module";
+import { addModuleCommand, updateModuleCommand } from "./commands/commands";
+export const baseUrl = "http://localhost:3333/api/v1";
 
 
 program
@@ -17,6 +18,6 @@ program.command('update-module')
 program.command('add-module')
   .description('Add a new module')
   .argument('<module_id>', 'Module ID to add')
-  .action((module_id) => console.log(`Adding module ${module_id}`))
+  .action((module_id) => addModuleCommand(module_id))
 
 program.parse(process.argv);
