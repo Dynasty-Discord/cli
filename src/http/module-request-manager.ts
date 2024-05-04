@@ -1,5 +1,5 @@
 import { baseUrl } from "..";
-import { Module } from "../types";
+import { Module } from "../types/types";
 import { HttpRequestManager } from "./http-request-manager";
 
 class ModuleRequestManager {

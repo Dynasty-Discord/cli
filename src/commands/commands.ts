@@ -1,4 +1,4 @@
-import { DownloadManager } from "../download-manager";
+import { DownloadManager } from "../utils/download-manager";
 import { verifyDynasty } from "../utils/utils";
 
 export function updateModuleCommand(module_id: string) {

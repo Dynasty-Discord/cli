@@ -1,28 +1,34 @@
 import { glob } from "glob-promise";
-import { baseUrl, secretKey } from ".";
-import moduleRequestManager from "./http/module-request-manager";
+import { baseUrl, prefix } from "..";
+import moduleRequestManager from "../http/module-request-manager";
 import fs from "node:fs";
 import path from "node:path";
 import * as tar from 'tar'
-import { Module } from "./types";
+import { Module } from "../types/types";
 import chalk from "chalk";
-import { getEnvVariables } from "./utils/utils";
+import { HttpRequestManager } from "../http/http-request-manager";
+import Logger from "./logger";
 
 const TEMPORARY_FOLDER = "temporary";
 const DEPRECATED_FOLDER = "deprecated";
 
 export class DownloadManager {
 
-  public async downloadModuleFile(id: string) {
-    const response = await fetch(baseUrl + "/modules/" + id + "/download", { headers: { "Secret-Key": secretKey }});
+  private async handleRequestError(action: string, error: any) {
+    Logger.error(`Error during ${action}: ${error.message}`);
+    throw error;
+  }
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+  public async downloadModuleFile(id: string) {
+    try {
+      const requestManager = new HttpRequestManager();
+      const arrayBuffer = await requestManager.downloadFile(`${baseUrl}/modules/${id}/download`);
+      const fileBuffer = Buffer.from(arrayBuffer);
+      const module = await moduleRequestManager.getModule(id);
+      return { fileBuffer, module };
+    } catch (error) {
+      await this.handleRequestError("downloading module file", error);
     }
-    const arrayBuffer = await response.arrayBuffer();
-    const fileBuffer = Buffer.from(arrayBuffer);
-    const module = await moduleRequestManager.getModule(id);
-    return { fileBuffer, module };
   }
 
   public async downloadModuleFolder(id: string, dest: string) {
@@ -32,7 +38,7 @@ export class DownloadManager {
       fs.mkdirSync(folderPath, { recursive: true });
       fs.writeFileSync(path.join(folderPath, module.githubRepo + ".tar.gz"), fileBuffer);
     } catch (error) {
-      throw Error("An error occured while downloading the module folder");
+      await this.handleRequestError("downloading module folder", error);
     }
   }
 
@@ -44,10 +50,9 @@ export class DownloadManager {
         file: pathExtract,
         cwd: folderPath,
       });
-
       fs.rmSync(pathExtract);
     } catch (error) {
-      throw Error("An error occured while extracting the module file");
+      await this.handleRequestError("extracting module file", error);
     }
   }
 
@@ -56,7 +61,7 @@ export class DownloadManager {
       const folderPath = path.join(process.cwd(), dest);
       fs.rmSync(path.join(folderPath, module.githubRepo), { recursive: true });
     } catch (error) {
-      throw Error("An error occured while clearing the module folder");
+      await this.handleRequestError("clearing module folder", error);
     }
   }
 
@@ -69,15 +74,15 @@ export class DownloadManager {
         fs.copyFileSync(path.join(folderPath, configPath), path.join(process.cwd(), TEMPORARY_FOLDER, configPath));
       }
     } catch (error) {
-      throw Error("An error occured while copying the config files");
+      await this.handleRequestError("copying config files", error);
     }
   }
 
   public async removeTemporaryFolder() {
-    try{
+    try {
       fs.rmSync(path.join(process.cwd(), TEMPORARY_FOLDER), { recursive: true });
     } catch (error) {
-      throw Error("An error occured while removing the temporary folder");
+      await this.handleRequestError("removing temporary folder", error);
     }
   }
 
@@ -91,7 +96,7 @@ export class DownloadManager {
         fs.copyFileSync(path.join(temporaryFolderPath, configPath), path.join(deprecatedFolderPath, configPath));
       }
     } catch (error) {
-      throw Error("An error occured while moving the old config files into the deprecated folder");
+      await this.handleRequestError("moving old config files into the deprecated folder", error);
     }
   }
 
@@ -104,20 +109,24 @@ export class DownloadManager {
       await this.extractModuleFile(module, dest);
       await this.moveOldConfigIntoDeprecateFolder(module, dest);
       await this.removeTemporaryFolder();
-      console.log(chalk.green(`Module ${module.githubRepo} updated successfully`));
+      Logger.success(`Module ${module.githubRepo} updated successfully`);
     } catch (error) {
-      console.error(chalk.red(error));
+      await this.handleRequestError("updating module", error);
     }
   }
 
   public async addModule(id: string, dest: string) {
-    const module = await moduleRequestManager.getModule(id);
-    if(fs.existsSync(path.join(process.cwd(), dest, module.githubRepo))) {
-      console.error(chalk.red("Module already exists"));
-      return;
+    try {
+      const module = await moduleRequestManager.getModule(id);
+      if (fs.existsSync(path.join(process.cwd(), dest, module.githubRepo))) {
+        Logger.error(`Module ${module.githubRepo} already exists, use update command instead`);
+        return;
+      }
+      await this.downloadModuleFolder(id, dest);
+      await this.extractModuleFile(module, dest);
+      Logger.success(`Module ${module.githubRepo} added successfully`);
+    } catch (error) {
+      await this.handleRequestError("adding module", error);
     }
-    await this.downloadModuleFolder(id, dest);
-    await this.extractModuleFile(module, dest);
-    console.log(chalk.green(`Module ${module.githubRepo} added successfully`));
   }
 }
