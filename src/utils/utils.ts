@@ -18,3 +18,16 @@ export function verifyDynasty() {
       }
     });
 }
+
+export function getEnvVariables() {
+  const path = process.cwd();
+  const env = fs.readFileSync(`${path}/.env`, 'utf8');
+  const envVariables = env.split('\n').reduce((acc, line) => {
+    const [key, value] = line.split('=');
+    acc[key] = value;
+    return acc;
+  }, {});
+  return envVariables;
+}
+
+

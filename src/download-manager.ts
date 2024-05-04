@@ -1,11 +1,12 @@
 import { glob } from "glob-promise";
-import { baseUrl } from ".";
+import { baseUrl, secretKey } from ".";
 import moduleRequestManager from "./http/module-request-manager";
 import fs from "node:fs";
 import path from "node:path";
 import * as tar from 'tar'
 import { Module } from "./types";
 import chalk from "chalk";
+import { getEnvVariables } from "./utils/utils";
 
 const TEMPORARY_FOLDER = "temporary";
 const DEPRECATED_FOLDER = "deprecated";
@@ -13,10 +14,10 @@ const DEPRECATED_FOLDER = "deprecated";
 export class DownloadManager {
 
   public async downloadModuleFile(id: string) {
-    const response = await fetch(baseUrl + "/modules/" + id + "/download");
+    const response = await fetch(baseUrl + "/modules/" + id + "/download", { headers: { "Secret-Key": secretKey }});
 
     if (!response.ok) {
-      throw new Error(`Erreur lors de la récupération du fichier: ${response.statusText}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     const arrayBuffer = await response.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
@@ -31,7 +32,7 @@ export class DownloadManager {
       fs.mkdirSync(folderPath, { recursive: true });
       fs.writeFileSync(path.join(folderPath, module.githubRepo + ".tar.gz"), fileBuffer);
     } catch (error) {
-      console.error(chalk.red("An error occured while downloading the module"));
+      throw Error("An error occured while downloading the module folder");
     }
   }
 
@@ -46,7 +47,7 @@ export class DownloadManager {
 
       fs.rmSync(pathExtract);
     } catch (error) {
-      console.error(chalk.red("An error occured while extracting the module"));
+      throw Error("An error occured while extracting the module file");
     }
   }
 
@@ -55,7 +56,7 @@ export class DownloadManager {
       const folderPath = path.join(process.cwd(), dest);
       fs.rmSync(path.join(folderPath, module.githubRepo), { recursive: true });
     } catch (error) {
-      console.error(chalk.red("An error occured while clearing the module folder"));
+      throw Error("An error occured while clearing the module folder");
     }
   }
 
@@ -68,7 +69,7 @@ export class DownloadManager {
         fs.copyFileSync(path.join(folderPath, configPath), path.join(process.cwd(), TEMPORARY_FOLDER, configPath));
       }
     } catch (error) {
-      console.error(chalk.red("An error occured while copying the config files"));
+      throw Error("An error occured while copying the config files");
     }
   }
 
@@ -76,7 +77,7 @@ export class DownloadManager {
     try{
       fs.rmSync(path.join(process.cwd(), TEMPORARY_FOLDER), { recursive: true });
     } catch (error) {
-      console.error(chalk.red("An error occured while removing the temporary folder"));
+      throw Error("An error occured while removing the temporary folder");
     }
   }
 
@@ -90,19 +91,23 @@ export class DownloadManager {
         fs.copyFileSync(path.join(temporaryFolderPath, configPath), path.join(deprecatedFolderPath, configPath));
       }
     } catch (error) {
-      console.error(chalk.red("An error occured while moving the old config files into the deprecated folder"));
+      throw Error("An error occured while moving the old config files into the deprecated folder");
     }
   }
 
   public async updateModule(id: string, dest: string) {
-    const module = await moduleRequestManager.getModule(id);
-    await this.copyConfigFiles(module, dest);
-    await this.clearModuleFolder(module, dest);
-    await this.downloadModuleFolder(id, dest);
-    await this.extractModuleFile(module, dest);
-    await this.moveOldConfigIntoDeprecateFolder(module, dest);
-    await this.removeTemporaryFolder();
-    console.log(chalk.green(`Module ${module.githubRepo} updated successfully`));
+    try {
+      const module = await moduleRequestManager.getModule(id);
+      await this.copyConfigFiles(module, dest);
+      await this.clearModuleFolder(module, dest);
+      await this.downloadModuleFolder(id, dest);
+      await this.extractModuleFile(module, dest);
+      await this.moveOldConfigIntoDeprecateFolder(module, dest);
+      await this.removeTemporaryFolder();
+      console.log(chalk.green(`Module ${module.githubRepo} updated successfully`));
+    } catch (error) {
+      console.error(chalk.red(error));
+    }
   }
 
   public async addModule(id: string, dest: string) {

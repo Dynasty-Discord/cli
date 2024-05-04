@@ -2,7 +2,9 @@
 
 import { program } from "commander";
 import { addModuleCommand, updateModuleCommand } from "./commands/commands";
+import { getEnvVariables } from "./utils/utils";
 export const baseUrl = "http://localhost:3333/api/v1";
+export const secretKey: string = getEnvVariables()["USER_SECRET_KEY"];
 
 
 program
