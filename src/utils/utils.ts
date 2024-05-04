@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import Logger from './logger';
+import moduleRequestManager from '../http/module-request-manager';
 export function verifyDynasty() {
   const path = process.cwd();
 
@@ -29,6 +30,22 @@ export function getEnvVariables() {
     return acc;
   }, {});
   return envVariables;
+}
+
+export async function isAccessibleModule(moduleName: string) {
+  const modules = await moduleRequestManager.getAccessibleModules();
+  return modules.some(module => module.name === moduleName);
+}
+
+export async function getStringAccessibleModules() {
+  const modules = await moduleRequestManager.getAccessibleModules();
+  return modules.map(module => module.name).join(', ');
+}
+
+export async function getModuleId(moduleName: string) {
+  const modules = await moduleRequestManager.getAccessibleModules();
+  const module = modules.find(module => module.name === moduleName);
+  return module.id;
 }
 
 

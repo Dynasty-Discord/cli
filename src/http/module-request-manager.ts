@@ -1,5 +1,5 @@
 import { baseUrl } from "..";
-import { Module } from "../types/types";
+import { Client, Module } from "../types/types";
 import { HttpRequestManager } from "./http-request-manager";
 
 class ModuleRequestManager {
@@ -18,6 +18,15 @@ class ModuleRequestManager {
   }
   public getModule(id: string): Promise<Module> {
     return this.http.get<Module>(`${baseUrl}/modules/${id}`);
+  }
+
+  public async getMe(): Promise<Client> {
+    return this.http.get<Client>(`${baseUrl}/me`);
+  }
+
+  public async getAccessibleModules(): Promise<Module[]> {
+    const me = await this.getMe();
+    return this.http.get<Module[]>(`${baseUrl}/clients/${me.id}/modules`);
   }
 }
 

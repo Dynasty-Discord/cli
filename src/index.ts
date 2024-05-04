@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { program } from "commander";
-import { addModuleCommand, updateModuleCommand } from "./commands/commands";
+import { addModuleCommand, getModuleListCommand, updateModuleCommand } from "./commands/commands";
 import { getEnvVariables } from "./utils/utils";
 import chalk from "chalk";
 export const baseUrl = "http://localhost:3333/api/v1";
@@ -19,12 +19,16 @@ const moduleCmd = program.command('module');
 
 moduleCmd.command('update')
   .description('Update a module')
-  .argument('<module_id>', 'Module ID to update')
-  .action((module_id) => updateModuleCommand(module_id))
+  .argument('<module_name>', 'Module ID to update')
+  .action((module_name) => updateModuleCommand(module_name))
 
 moduleCmd.command('add')
   .description('Add a new module')
-  .argument('<module_id>', 'Module ID to add')
-  .action((module_id) => addModuleCommand(module_id))
+  .argument('<module_name>', 'Module ID to add')
+  .action((module_name) => addModuleCommand(module_name))
+
+moduleCmd.command('list')
+  .description('List all modules')
+  .action(() => getModuleListCommand())
 
 program.parse(process.argv);
