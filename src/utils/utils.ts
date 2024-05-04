@@ -34,17 +34,17 @@ export function getEnvVariables() {
 
 export async function isAccessibleModule(moduleName: string) {
   const modules = await moduleRequestManager.getAccessibleModules();
-  return modules.some(module => module.name === moduleName);
+  return modules.some(module => module.githubRepo === moduleName);
 }
 
 export async function getStringAccessibleModules() {
   const modules = await moduleRequestManager.getAccessibleModules();
-  return modules.map(module => module.name).join(', ');
+  return modules.map(module => module.githubRepo).join(', ');
 }
 
 export async function getModuleId(moduleName: string) {
   const modules = await moduleRequestManager.getAccessibleModules();
-  const module = modules.find(module => module.name === moduleName);
+  const module = modules.find(module => module.githubRepo === moduleName);
   return module.id;
 }
 
