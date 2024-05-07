@@ -4,7 +4,7 @@ import { program } from "commander";
 import { addModuleCommand, getModuleListCommand, updateModuleCommand } from "./commands/commands";
 import { getEnvVariables } from "./utils/utils";
 import chalk from "chalk";
-export const baseUrl = "http://localhost:3333/api/v1";
+export const baseUrl = getEnvVariables()["UPDATE_BASE_URL"];
 export const secretKey: string = getEnvVariables()["USER_SECRET_KEY"];
 export const prefix = `[${chalk.yellow('DynastyCLI')}]`
 
