@@ -4,7 +4,9 @@ import { getModuleId, getStringAccessibleModules, isAccessibleModule, verifyDyna
 
 export async function updateModuleCommand(moduleName: string) {
   verifyDynasty();
-  if(!(await isAccessibleModule(moduleName))) {
+
+  Logger.info(`Checking accessibility of ${moduleName}...`);
+  if (!(await isAccessibleModule(moduleName))) {
     Logger.error(`Module ${moduleName} is not accessible. Accessible modules: ${await getStringAccessibleModules()}`);
     process.exit(1);
   }
@@ -15,6 +17,8 @@ export async function updateModuleCommand(moduleName: string) {
 
 export async function addModuleCommand(moduleName: string) {
   verifyDynasty();
+
+  Logger.info(`Checking accessibility of ${moduleName}...`);
   if (!(await isAccessibleModule(moduleName))) {
     Logger.error(`Module ${moduleName} is not accessible. Accessible modules: ${await getStringAccessibleModules()}`);
     process.exit(1);

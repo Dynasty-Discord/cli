@@ -1,6 +1,6 @@
 {
   "name": "dynasty-cli",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "CLI for DynastyCore",
   "main": "build/index.js",
   "scripts": {

@@ -10,8 +10,7 @@ export class HttpRequestManager {
   }
 
   public async get<T>(url: string): Promise<T> {
-    return fetch(url, { headers: { "Secret-Key": secretKey } })
-      .then((response) => this.handleResponse<T>(response));
+    return fetch(url, { headers: { "Secret-Key": secretKey } }).then((response) => this.handleResponse<T>(response));
   }
 
   public async post<T>(url: string, data: unknown): Promise<T> {

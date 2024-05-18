@@ -1,19 +1,17 @@
 import { glob } from "glob-promise";
-import { baseUrl, prefix } from "..";
-import moduleRequestManager from "../http/module-request-manager";
 import fs from "node:fs";
 import path from "node:path";
-import * as tar from 'tar'
-import { Module } from "../types/types";
-import chalk from "chalk";
+import * as tar from "tar";
+import { baseUrl } from "..";
 import { HttpRequestManager } from "../http/http-request-manager";
+import moduleRequestManager from "../http/module-request-manager";
+import { Module } from "../types/types";
 import Logger from "./logger";
 
 const TEMPORARY_FOLDER = "temporary";
 const DEPRECATED_FOLDER = "deprecated";
 
 export class DownloadManager {
-
   private async handleRequestError(action: string, error: any) {
     Logger.error(`Error during ${action}: ${error.message}`);
     throw error;
@@ -103,6 +101,7 @@ export class DownloadManager {
   public async updateModule(id: string, dest: string) {
     try {
       const module = await moduleRequestManager.getModule(id);
+      Logger.info(`Updating module ${module.githubRepo}...`);
       await this.copyConfigFiles(module, dest);
       await this.clearModuleFolder(module, dest);
       await this.downloadModuleFolder(id, dest);
@@ -122,6 +121,7 @@ export class DownloadManager {
         Logger.error(`Module ${module.githubRepo} already exists, use update command instead`);
         return;
       }
+      Logger.info(`Adding module ${module.githubRepo}...`);
       await this.downloadModuleFolder(id, dest);
       await this.extractModuleFile(module, dest);
       Logger.success(`Module ${module.githubRepo} added successfully`);
